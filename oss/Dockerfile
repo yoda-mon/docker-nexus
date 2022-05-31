@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM registry.access.redhat.com/ubi7/ubi
+FROM centos:7 
 
 LABEL vendor=Sonatype \
   maintainer="Sonatype <cloud-ops@sonatype.com>" \
