@@ -12,7 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-FROM registry.access.redhat.com/ubi7/ubi
+FROM centos:7
 
 LABEL vendor=Sonatype \
   maintainer="Sonatype <cloud-ops@sonatype.com>" \
@@ -25,9 +25,17 @@ ARG NEXUS_DOWNLOAD_URL=https://download.sonatype.com/nexus/oss/nexus-${NEXUS_VER
 ENV SONATYPE_WORK=/sonatype-work
 ENV NEXUS_HOME=/opt/sonatype/nexus
 
-RUN yum install -v -y --disableplugin=subscription-manager hostname java-1.8.0-openjdk-headless \
-  && yum-config-manager --add-repo http://mirror.centos.org/centos/7/os/x86_64/ \
-  && rpm --import http://mirror.centos.org/centos/7/os/x86_64/RPM-GPG-KEY-CentOS-7 \
+RUN ARCH=`uname -m` \
+  && if [ "$ARCH" == "x86_64" ]; then \
+       TYPE="centos"; \
+     elif [ "$ARCH" == "aarch64" ] || [ "$ARCH" == "ppc64le" ]; then\
+       TYPE="altarch"; \
+     fi \
+  && REPO_URL=http://mirror.centos.org/"$TYPE"/7/os/"$ARCH" \
+  && GPG_KEY_URL="$REPO_URL"/RPM-GPG-KEY-CentOS-7 \
+  && yum install -v -y --disableplugin=subscription-manager hostname java-1.8.0-openjdk-headless \
+  && yum-config-manager --add-repo $REPO_URL \
+  && rpm --import $GPG_KEY_URL \
   && yum install -v -y createrepo \
   && yum --disableplugin=subscription-manager clean all
 
